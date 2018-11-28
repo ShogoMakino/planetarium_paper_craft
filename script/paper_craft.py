@@ -75,13 +75,15 @@ class PaperCraft:
         elem.update(kwargs)
         self.__shapes[-1]['child'].append(elem)
 
-    def rect(self, p1, p2, name=None, **kwargs):
+    def rect(self, x1, x2, name=None, **kwargs):
         name = (name if name is not None
                       else self.__generate_name('rect'))
-        p3 = [p1[0], p2[1]]
-        p4 = [p2[0], p1[1]]
-        points = [np.array(p1, dtype=self.dtype), np.array(p3, dtype=self.dtype),
-                  np.array(p2, dtype=self.dtype), np.array(p4, dtype=self.dtype)]
+        p0 = [min(x1[0], x2[0]), min(x1[1], x2[1])]
+        p1 = [max(x1[0], x2[0]), min(x1[1], x2[1])]
+        p2 = [max(x1[0], x2[0]), max(x1[1], x2[1])]
+        p3 = [min(x1[0], x2[0]), max(x1[1], x2[1])]
+        points = [np.array(p0, dtype=self.dtype), np.array(p1, dtype=self.dtype),
+                  np.array(p2, dtype=self.dtype), np.array(p3, dtype=self.dtype)]
         self.polygon(points, name=name, loop=True, **kwargs)
 
     def regular_polygon(self, n, name=None, skip=None,
@@ -141,7 +143,8 @@ class PaperCraft:
         p0 = target['points'][index0]
         p1 = target['points'][index1]
         vec01 = p1 - p0
-        glue_min_length = width * (math.tan(math.pi - angle0) + math.tan(math.pi - angle1))
+        glue_min_length = width * (math.tan(math.pi / 2 - angle0)
+                                   + math.tan(math.pi / 2 - angle1))
         vec01n = vec01 / np.linalg.norm(vec01)
         vec03n = np.dot(self.__rot_matrix(-angle0), vec01n)
         if np.linalg.norm(vec01) < glue_min_length:
@@ -273,74 +276,3 @@ class PaperCraft:
                             and target['stroke_width'] is not None)
                         else self.stroke_width)
         return stroke, fill, stroke_width
-
-shiitake_config = [
-    {'name': 'n0', 'n': 5, 'circle': True, 'adjust': None, 'glue': None},
-    {'name': 'n1', 'n': 6, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n0', 'target_index': [1, 0], 'move_index': [0, 1]}},
-    {'name': 'n2', 'n': 6, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n0', 'target_index': [2, 1], 'move_index': [0, 1]}},
-    {'name': 'n3', 'n': 6, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n0', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n4', 'n': 6, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n0', 'target_index': [4, 3], 'move_index': [0, 1]}},
-    {'name': 'n5', 'n': 6, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n0', 'target_index': [0, 4], 'move_index': [0, 1]}},
-    {'name': 'n6', 'n': 5, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n1', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n7', 'n': 5, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n2', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n8', 'n': 5, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n3', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n9', 'n': 5, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n4', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n10', 'n': 5, 'circle': True, 'glue': [[1, 2]],
-     'adjust': {'target': 'n5', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n11', 'n': 6, 'circle': True, 'glue': [[1, 2], [2, 3], [3, 4]],
-     'adjust': {'target': 'n6', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n12', 'n': 6, 'circle': True, 'glue': [[1, 2], [2, 3], [3, 4], [4, 5]],
-     'adjust': {'target': 'n7', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n13', 'n': 6, 'circle': True, 'glue': [[1, 2], [2, 3], [3, 4], [4, 5]],
-     'adjust': {'target': 'n8', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n14', 'n': 6, 'circle': True, 'glue': [[1, 2], [2, 3], [3, 4], [4, 5]],
-     'adjust': {'target': 'n9', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n15', 'n': 6, 'circle': True, 'glue': [[1, 2], [2, 3], [3, 4], [4, 5]],
-     'adjust': {'target': 'n10', 'target_index': [3, 2], 'move_index': [0, 1]}},
-    {'name': 'n16', 'n': 6, 'circle': False, 'skip': [3, 4], 'glue': [[1, 2], [2, 3]],
-     'adjust': {'target': 'n6', 'target_index': [4, 3], 'move_index': [0, 1]}},
-    {'name': 'n17', 'n': 6, 'circle': False, 'skip': [3, 4], 'glue': [[1, 2], [2, 3]],
-     'adjust': {'target': 'n7', 'target_index': [4, 3], 'move_index': [0, 1]}},
-    {'name': 'n18', 'n': 6, 'circle': False, 'skip': [3, 4], 'glue': [[1, 2], [2, 3]],
-     'adjust': {'target': 'n8', 'target_index': [4, 3], 'move_index': [0, 1]}},
-    {'name': 'n19', 'n': 6, 'circle': False, 'skip': [3, 4], 'glue': [[1, 2], [2, 3]],
-     'adjust': {'target': 'n9', 'target_index': [4, 3], 'move_index': [0, 1]}},
-    {'name': 'n20', 'n': 6, 'circle': False, 'skip': [3, 4], 'glue': [[1, 2], [2, 3]],
-     'adjust': {'target': 'n10', 'target_index': [4, 3], 'move_index': [0, 1]}}
-]
-
-if __name__ == '__main__':
-    pc = PaperCraft("sample.svg")
-    pc.glue_width = 3
-    pc.glue_angle = math.pi / 4
-    pc.begin_group("shiitake")
-    for elem in shiitake_config:
-        pc.begin_group(elem['name'])
-        skip = elem['skip'] if 'skip' in elem else None
-        pc.regular_polygon(elem['n'], name='surface',
-                           side=10, skip=skip, fill='lightgray')
-        if elem['glue']:
-            for glue in elem['glue']:
-                pc.glue(['surface'], *glue, root='active')
-        if elem['circle']:
-            pc.circle([0.0, 0.0], 4, fill='white', draw_type='texture')
-        if elem['adjust'] is not None:
-            pc.adjust_points(['surface'],
-                             elem['adjust']['move_index'][0],
-                             elem['adjust']['move_index'][1],
-                             ['shiitake', elem['adjust']['target'], 'surface'],
-                             elem['adjust']['target_index'][0],
-                             elem['adjust']['target_index'][1])
-        pc.end_group()
-    pc.translate([60, 60])
-    pc.end_group()
-    pc.draw()
