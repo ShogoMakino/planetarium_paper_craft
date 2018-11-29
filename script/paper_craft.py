@@ -206,13 +206,15 @@ class PaperCraft:
                 if type(target[key]) == dict:
                     ret_dict[key] = self.__filter_by_key(target[key], filter_keys)
                 elif type(target[key]) == list:
-                    ret_dict[key] = list(map(lambda x: self.__filter_by_key(x, filter_keys), target[key]))
+                    ret_dict[key] = list(map(lambda x:
+                                             self.__filter_by_key(x, filter_keys),
+                                             target[key]))
                 else:
                     ret_dict[key] = target[key]
         return ret_dict
 
     def __generate_name(self, prefix):
-        existing_names = self.__shapes[-1].keys()
+        existing_names = list(map(lambda x: x['name'], self.__shapes[-1]['child']))
         i = 0
         while prefix + str(i) in existing_names:
             i += 1
