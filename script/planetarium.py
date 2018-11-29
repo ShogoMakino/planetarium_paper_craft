@@ -53,7 +53,7 @@ pipe = {168: 2, 160: 3, 140: 2}
 angle = {58: 7, 177: 6, 68: 6, 58: 4, 24: 4}
 
 if __name__ == '__main__':
-    pc = PaperCraft("sample.svg")
+    pc = PaperCraft("planetarium.svg")
     pc.glue_width = 3
     pc.glue_angle = math.pi / 4
     pc.begin_group("shiitake", svg_group=True)
@@ -116,4 +116,33 @@ if __name__ == '__main__':
         pc.circle([8, -2], 0.3, object_type='texture', fill='none')
         pc.translate([100 + i * 20, 15])
         pc.end_group()
+
+    for i in range(2):
+        pc.begin_group("latitude_gearbox_channel" + str(i), svg_group=True)
+        pc.rect([0, 0], [5, 30], fill='lightgray')
+        pc.rect([5, 0], [15, 30], fill='lightgray')
+        pc.rect([15, 0], [20, 30], fill='lightgray')
+        pc.translate([100 + i * 25, 50])
+        pc.end_group()
+
+        pc.begin_group("latitude_gearbox_plate" + str(i), svg_group=True)
+        pc.polygon([[0, 0], [20, 0], [20, 30], [15, 30],
+                    [15, 15], [5, 15], [5, 30], [0, 30]],
+                   fill='lightgray', loop=True)
+        pc.translate([150 + i * 25, 50])
+        pc.end_group()
+
+    pc.begin_group("latitude_motor", svg_group=True)
+    pc.rect([0, 0], [6, -6], fill='black', stroke='darkgray')
+    pc.rect([0, 0], [6, 10], fill='black', stroke='darkgray')
+    pc.rect([6, 0], [12, 10], fill='black', stroke='darkgray')
+    pc.rect([12, 0], [18, 10], fill='black', stroke='darkgray')
+    pc.rect([18, 0], [24, 10], fill='black', stroke='darkgray')
+    pc.glue(['rect0'], 0, 1, root='active')
+    pc.glue(['rect0'], 1, 2, root='active')
+    pc.glue(['rect0'], 3, 0, root='active')
+    pc.glue(['rect1'], 3, 0, root='active')
+    pc.translate([100, 30])
+    pc.end_group()
+
     pc.draw()
