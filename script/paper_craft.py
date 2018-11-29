@@ -37,6 +37,25 @@ class PaperCraft:
         last_group = self.__shapes.pop()
         self.__shapes[-1]['child'].append(last_group)
 
+    def set_active_group(self, group_name):
+        target = self.__get_object_by_name(group_name, root='root')
+        if target is None:
+            return
+        elif target['type'] is not 'group':
+            print('target is not group')
+            return
+        self.active_group = group_name
+        self.__shapes.append(target)
+
+    def restore_active_group(self):
+        target = self.__get_object_by_name(self.active_group, root='root')
+        if target is None:
+            return
+        elif target['type'] is not 'group':
+            print('target is not group')
+            return
+        target = self.__shapes.pop()
+
     def draw(self):
         for object_type in self.draw_order:
             self.__draw_target(self.__shapes[0], self.__dwg, {'object_type': object_type})
