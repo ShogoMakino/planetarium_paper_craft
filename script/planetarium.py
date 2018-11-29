@@ -122,14 +122,14 @@ if __name__ == '__main__':
         pc.rect([0, 0], [5, 30], fill='lightgray')
         pc.rect([5, 0], [15, 30], fill='lightgray')
         pc.rect([15, 0], [20, 30], fill='lightgray')
-        pc.translate([100 + i * 25, 50])
+        pc.translate([100 + i * 25, 30])
         pc.end_group()
 
         pc.begin_group("latitude_gearbox_plate" + str(i), svg_group=True)
         pc.polygon([[0, 0], [20, 0], [20, 30], [15, 30],
                     [15, 15], [5, 15], [5, 30], [0, 30]],
                    fill='lightgray', loop=True)
-        pc.translate([150 + i * 25, 50])
+        pc.translate([150 + i * 25, 30])
         pc.end_group()
 
     pc.begin_group("latitude_motor", svg_group=True)
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     pc.glue(['rect0'], 1, 2, root='active')
     pc.glue(['rect0'], 3, 0, root='active')
     pc.glue(['rect1'], 3, 0, root='active')
-    pc.translate([100, 30])
+    pc.translate([100, 80])
     pc.end_group()
 
     pc.draw()
