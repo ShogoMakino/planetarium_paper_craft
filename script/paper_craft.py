@@ -13,7 +13,8 @@ class PaperCraft:
         self.__dwg = svgwrite.Drawing(filename,
                                       size=('210mm', '297mm'),
                                       viewBox=('0 0 210 297'))
-        self.__shapes = [{'type': 'group', 'name': 'root', 'child': []}]
+        self.__shapes = [{'type': 'group', 'name': 'root', 'child': [],
+                          'draw': True, 'object_type': None}]
 
         self.stroke = stroke
         self.fill = fill
@@ -22,18 +23,23 @@ class PaperCraft:
         self.glue_angle = glue_angle
         self.draw_order = ['glue', 'surface', 'texture']
 
-    def begin_group(self, name=None):
+    def begin_group(self, name=None, svg_group=False,
+                    object_type='surface', **kwargs):
         name = (name if name is not None
                       else self.__generate_name('group'))
-        self.__shapes.append({'type': 'group', 'name': name, 'child': []})
+        object_type = object_type if svg_group else None
+        elem = {'type': 'group', 'name': name, 'child': [],
+                'draw': True, 'object_type': object_type}
+        elem.update(kwargs)
+        self.__shapes.append(elem)
 
     def end_group(self):
         last_group = self.__shapes.pop()
         self.__shapes[-1]['child'].append(last_group)
 
     def draw(self):
-        for draw_type in self.draw_order:
-            self.__apply_group(self.__shapes[0], self.__draw_sub_if, {'draw_type': draw_type})
+        for object_type in self.draw_order:
+            self.__draw_target(self.__shapes[0], self.__dwg, {'object_type': object_type})
         self.__dwg.save()
 
     def translate(self, dx):
@@ -70,7 +76,7 @@ class PaperCraft:
         elem = {'type': 'path',
                 'name': name,
                 'points': np_points,
-                'draw_type': 'surface',
+                'object_type': 'surface',
                 'draw': True}
         elem.update(kwargs)
         self.__shapes[-1]['child'].append(elem)
@@ -117,7 +123,7 @@ class PaperCraft:
                 'draw': True,
                 'points': [np.array(center, dtype=self.dtype)],
                 'radius': radius,
-                'draw_type': 'surface'}
+                'object_type': 'surface'}
         elem.update(kwargs)
         self.__shapes[-1]['child'].append(elem)
 
@@ -158,7 +164,7 @@ class PaperCraft:
             p2 = p1 + vec12
             p3 = p0 + vec03
             points = [p0, p3, p2, p1]
-        self.polygon(points, name=name, draw_type='glue', **kwargs)
+        self.polygon(points, name=name, object_type='glue', **kwargs)
 
     def __get_object_by_name(self, name_list, root='root'):
         if root == 'root':
@@ -233,34 +239,46 @@ class PaperCraft:
                          [math.sin(rad), math.cos(rad)]],
                         dtype=self.dtype)
 
-    def __draw_sub_if(self, target, cond):
-        for key in cond.keys():
-            if key not in target or target[key] != cond[key]:
+    def __draw_target(self, target, dwg, draw_filter=None):
+        if not target['draw']:
+            return
+        if target['type'] == 'group' and target['object_type'] is None:
+            for child in target['child']:
+                self.__draw_target(child, dwg, draw_filter)
+        else:
+            if not self.__check_filter(target, draw_filter):
                 return
-        self.__draw_sub(target)
-
-    def __draw_sub(self, target):
-        if 'draw' in target and target['draw']:
-            if target['type'] == 'path':
-                self.__draw_path(target)
+            if target['type'] == 'group':
+                grp = dwg.add(self.__dwg.g(id=target['name']))
+                for object_type in self.draw_order:
+                    for child in target['child']:
+                        self.__draw_target(child, grp, {'object_type': object_type})
+            elif target['type'] == 'path':
+                self.__draw_path(target, dwg)
             elif target['type'] == 'circle':
-                self.__draw_circle(target)
+                self.__draw_circle(target, dwg)
 
-    def __draw_path(self, target):
+    def __check_filter(self, target, filter_dict):
+        for key in filter_dict.keys():
+            if key not in target or target[key] != filter_dict[key]:
+                return False
+        return True
+
+    def __draw_path(self, target, dwg):
         d = [(['M'] if i == 0 else['L']) + list(l)
              for i, l in enumerate(target['points'])]
         if 'loop' in target and target['loop']:
             d.append(['Z'])
         stroke, fill, stroke_width = self.__draw_style(target)
-        self.__dwg.add(self.__dwg.path(d, stroke=stroke, fill=fill,
-                                       stroke_width=stroke_width))
+        dwg.add(self.__dwg.path(d, stroke=stroke, fill=fill,
+                                stroke_width=stroke_width))
 
-    def __draw_circle(self, target):
+    def __draw_circle(self, target, dwg):
         stroke, fill, stroke_width = self.__draw_style(target)
-        self.__dwg.add(self.__dwg.circle(center=target['points'][0],
-                                         r=target['radius'],
-                                         stroke=stroke, fill=fill,
-                                         stroke_width=stroke_width))
+        dwg.add(self.__dwg.circle(center=target['points'][0],
+                                  r=target['radius'],
+                                  stroke=stroke, fill=fill,
+                                  stroke_width=stroke_width))
 
     def __draw_style(self, target):
         stroke = (target['stroke']

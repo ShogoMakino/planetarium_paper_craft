@@ -56,7 +56,7 @@ if __name__ == '__main__':
     pc = PaperCraft("sample.svg")
     pc.glue_width = 3
     pc.glue_angle = math.pi / 4
-    pc.begin_group("shiitake")
+    pc.begin_group("shiitake", svg_group=True)
     for elem in shiitake_config:
         pc.begin_group(elem['name'])
         skip = elem['skip'] if 'skip' in elem else None
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             for glue in elem['glue']:
                 pc.glue(['surface'], *glue, root='active')
         if elem['circle']:
-            pc.circle([0.0, 0.0], 4, fill='white', draw_type='texture')
+            pc.circle([0.0, 0.0], 4, fill='white', object_type='texture')
         if elem['adjust'] is not None:
             pc.adjust_points(['surface'],
                              elem['adjust']['move_index'][0],
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     x = 0
     for key in pipe.keys():
         for i in range(pipe[key]):
-            pc.begin_group('pipe_' + str(key) + '_' + str(i))
+            pc.begin_group('pipe_' + str(key) + '_' + str(i), svg_group=True)
             pc.rect([0, 0], [4, key], fill='black', stroke='darkgray')
             pc.rect([4, 0], [8, key], fill='black', stroke='darkgray')
             pc.rect([8, 0], [12, key], fill='black', stroke='darkgray')
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     for key in angle.keys():
         for i in range(angle[key]):
-            pc.begin_group('pipe_' + str(key) + '_' + str(i))
+            pc.begin_group('angle_' + str(key) + '_' + str(i), svg_group=True)
             pc.rect([0, 0], [4, key], fill='black', stroke='darkgray')
             pc.rect([4, 0], [8, key], fill='black', stroke='darkgray')
             pc.rect([8, 0], [12, key], fill='black', stroke='darkgray')
@@ -103,8 +103,17 @@ if __name__ == '__main__':
             x += 25
 
     for i in range(8):
-        pc.begin_group("plate" + str(i))
-        pc.polygon([[0, 0], [0, 12], [12, 0]], loop=True, fill='lightgray')
-        pc.translate([100 + i * 20, 10])
+        pc.begin_group("plate" + str(i), svg_group=True)
+        pc.polygon([[0, 0], [12, 0], [0, 12]], loop=True, fill='lightgray')
+        pc.polygon([[0, 0], [0, -12], [12, 0]], loop=True, fill='lightgray')
+        pc.circle([2, 2], 0.3, object_type='texture', fill='none')
+        pc.circle([2, 6], 0.3, object_type='texture', fill='none')
+        pc.circle([2, 8], 0.3, object_type='texture', fill='none')
+        pc.circle([8, 2], 0.3, object_type='texture', fill='none')
+        pc.circle([2, -2], 0.3, object_type='texture', fill='none')
+        pc.circle([2, -6], 0.3, object_type='texture', fill='none')
+        pc.circle([2, -8], 0.3, object_type='texture', fill='none')
+        pc.circle([8, -2], 0.3, object_type='texture', fill='none')
+        pc.translate([100 + i * 20, 15])
         pc.end_group()
     pc.draw()
