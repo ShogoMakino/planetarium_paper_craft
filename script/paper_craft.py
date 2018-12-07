@@ -156,7 +156,7 @@ class PaperCraft:
         elem.update(kwargs)
         self.__shapes[-1]['child'].append(elem)
 
-    def glue(self, target_name, index0, index1, width=None,
+    def glue(self, target_name, index0, index1, width=None, max_length=None,
              angle0=None, angle1=None, root='root', **kwargs):
         target = self.__get_object_by_name(target_name, root=root)
         if target is None:
@@ -168,21 +168,37 @@ class PaperCraft:
         p0 = target['points'][index0]
         p1 = target['points'][index1]
         vec01 = p1 - p0
+        norm01 = np.linalg.norm(vec01)
+        vec01n = vec01 / np.linalg.norm(vec01)
+
+        if max_length is None:
+            glue_num = 1
+            glue_section_length = norm01
+        else:
+            glue_num = math.ceil(norm01 / max_length)
+            glue_section_length = norm01 / glue_num
+
         glue_min_length = width * (math.tan(math.pi / 2 - angle0)
                                    + math.tan(math.pi / 2 - angle1))
-        vec01n = vec01 / np.linalg.norm(vec01)
-        vec03n = np.dot(self.__rot_matrix(-angle0), vec01n)
-        if np.linalg.norm(vec01) < glue_min_length:
-            vec03 = vec03n * np.linalg.norm(vec01) / glue_min_length * width / math.sin(angle0)
-            p3 = p0 + vec03
-            points = [p0, p3, p1]
+        vec02n = np.dot(self.__rot_matrix(-angle0), vec01n)
+        points = []
+        if glue_section_length < glue_min_length:
+            vec02 = vec02n * (glue_section_length * 0.5 / math.cos(angle0))
+            for i in range(glue_num):
+                p0_ = p0 + vec01n * i * glue_section_length
+                p2_ = p0_ + vec02
+                points += [p0_, p2_]
         else:
-            vec12n = np.dot(self.__rot_matrix(angle1), -vec01n)
-            vec03 = vec03n * width / math.sin(angle0)
-            vec12 = vec12n * width / math.sin(angle1)
-            p2 = p1 + vec12
-            p3 = p0 + vec03
-            points = [p0, p3, p2, p1]
+            vec13n = np.dot(self.__rot_matrix(angle1), -vec01n)
+            vec02 = vec02n * width / math.sin(angle0)
+            vec13 = vec13n * width / math.sin(angle1)
+            for i in range(glue_num):
+                p0_ = p0 + vec01n * i * glue_section_length
+                p1_ = p0 + vec01n * (i + 1) * glue_section_length
+                p2_ = p0_ + vec02
+                p3_ = p1_ + vec13
+                points += [p0_, p2_, p3_]
+        points.append(p1)
         self.polygon(points, name=name, object_type='glue', **kwargs)
 
     def __get_object_by_name(self, name_list, root='root'):
